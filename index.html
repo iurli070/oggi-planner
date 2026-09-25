@@ -24,15 +24,25 @@ label{display:block;font-size:13px;font-weight:700;margin-top:12px}input,select{
 <body>
 <main>
 <section class="top">
-<div><div class="kicker">LUNEDÌ 21 SETTEMBRE</div><div class="title">Oggi</div></div>
-<button class="primary" id="openAdd">＋ Aggiungi</button>
+<div><div class="kicker" id="todayLabel"></div><div class="title">Oggi</div></div>
+<div style="display:flex;gap:8px"><button class="primary" id="openSettings">⚙</button><button class="primary" id="openAdd">＋ Aggiungi</button></div>
 </section>
 
 <section id="agenda">
-<div class="card event"><div class="bar"></div><div class="time">08:30</div><div><b>Lavoro</b><div class="muted">Ufficio · 4h</div></div></div>
+<div class="card event"><div class="bar"></div><div class="time" id="workStartLabel">08:30</div><div><b>Lavoro</b><div class="muted" id="workSummary">Ufficio · 9h</div></div></div>
 <div class="card event"><div class="bar" style="background:#8b5cf6"></div><div class="time">13:00</div><div><b>Appuntamento</b><div class="muted">Dentista · 60 min</div></div></div>
 <div class="card event"><div class="bar" style="background:#16a34a"></div><div class="time">18:30</div><div><b>Palestra</b><div class="muted">Corsa · 60 min</div></div></div>
 <div class="card event"><div class="bar" style="background:#f97316"></div><div class="time">20:00</div><div><b>Inglese</b><div class="muted">Lezione · 50 min</div></div></div>
+</section>
+
+<section id="settingsPanel" class="panel hidden">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Impostazioni</h2><button id="closeSettings">✕</button></div>
+<div class="muted" style="margin-top:6px">Imposta il tuo normale orario di lavoro. Potrai modificarlo quando vuoi.</div>
+<div class="grid">
+<label>Inizio lavoro<input id="workStart" type="time"></label>
+<label>Fine lavoro<input id="workEnd" type="time"></label>
+</div>
+<button class="primary save" id="saveSettings">Salva orario di lavoro</button>
 </section>
 
 <section id="addPanel" class="panel hidden">
@@ -43,7 +53,7 @@ label{display:block;font-size:13px;font-weight:700;margin-top:12px}input,select{
 <label>Durata<select id="duration"><option>50 min</option><option>30 min</option><option>60 min</option><option>90 min</option></select></label>
 </div>
 <div class="grid">
-<label>Data<input id="date" type="date" value="2026-09-21"></label>
+<label>Data<input id="date" type="date"></label>
 <label>Ora<input id="time" type="time" value="20:00"></label>
 </div>
 <button class="primary save" id="save">Salva</button>
@@ -64,21 +74,40 @@ label{display:block;font-size:13px;font-weight:700;margin-top:12px}input,select{
 <nav class="nav"><div class="active">⌂<br>Oggi</div><div>▦<br>Calendario</div><div>☷<br>Liste</div><div>◷<br>Scadenze</div></nav>
 </main>
 <script>
-const memoryKey="appv1-memory", shoppingKey="appv1-shopping";
+const memoryKey="appv1-memory", shoppingKey="appv1-shopping", workStartKey="appv1-work-start", workEndKey="appv1-work-end";
 let memory=JSON.parse(localStorage.getItem(memoryKey)||'["Banane","Latte","Uova","Pane integrale","Yogurt","Acqua","Pasta integrale"]');
 let shopping=JSON.parse(localStorage.getItem(shoppingKey)||'["Banane","Latte","Uova"]');
+let workStart=localStorage.getItem(workStartKey)||"08:30";
+let workEnd=localStorage.getItem(workEndKey)||"17:30";
 const $=id=>document.getElementById(id);
-function saveState(){localStorage.setItem(memoryKey,JSON.stringify(memory));localStorage.setItem(shoppingKey,JSON.stringify(shopping))}
+function todayInput(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function formatToday(){return new Intl.DateTimeFormat('it-IT',{weekday:'long',day:'numeric',month:'long'}).format(new Date()).toUpperCase()}
+function durationText(start,end){const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);let mins=(eh*60+em)-(sh*60+sm);if(mins<0)mins+=1440;const h=Math.floor(mins/60),m=mins%60;return `${h}h${m?` ${m}m`:''}`}
+function renderHeader(){
+  $('todayLabel').textContent=formatToday();
+  $('workStartLabel').textContent=workStart;
+  $('workSummary').textContent=`Ufficio · ${durationText(workStart,workEnd)}`;
+  $('workStart').value=workStart;
+  $('workEnd').value=workEnd;
+  $('date').value=todayInput();
+}
+function saveState(){localStorage.setItem(memoryKey,JSON.stringify(memory));localStorage.setItem(shoppingKey,JSON.stringify(shopping));localStorage.setItem(workStartKey,workStart);localStorage.setItem(workEndKey,workEnd)}
 function render(){
  const q=$("product").value.trim().toLowerCase();
- $("suggestions").innerHTML=(q?memory.filter(x=>x.toLowerCase().includes(q)):memory.slice(0,5))
- .map(x=>`<button class="chip" data-suggest="${x.replaceAll('"','&quot;')}">${x}</button>`).join("");
+ $("suggestions").innerHTML=(q?memory.filter(x=>x.toLowerCase().includes(q)):memory.slice(0,5)).map(x=>`<button class="chip" data-suggest="${x.replaceAll('"','&quot;')}">${x}</button>`).join("");
  $("shopping").innerHTML=shopping.map((x,i)=>`<label class="item"><input type="checkbox" data-i="${i}"><span>${x}</span></label>`).join("");
 }
-$("openAdd").onclick=()=>{$("addPanel").classList.remove("hidden");$("task").focus()};
+$("openAdd").onclick=()=>{$("addPanel").classList.remove("hidden");$("settingsPanel").classList.add("hidden");$("date").value=todayInput();$("task").focus()};
 $("closeAdd").onclick=()=>$("addPanel").classList.add("hidden");
+$("openSettings").onclick=()=>{$("settingsPanel").classList.remove("hidden");$("addPanel").classList.add("hidden")};
+$("closeSettings").onclick=()=>$("settingsPanel").classList.add("hidden");
+$("saveSettings").onclick=()=>{
+ const start=$("workStart").value,end=$("workEnd").value;
+ if(!start||!end)return;
+ workStart=start;workEnd=end;saveState();renderHeader();$("settingsPanel").classList.add("hidden");
+};
 $("save").onclick=()=>{
- const t=$("task").value.trim(); if(!t){$("task").focus();return}
+ const t=$("task").value.trim();if(!t){$("task").focus();return}
  const el=document.createElement("div");el.className="card event";el.innerHTML=`<div class="bar"></div><div class="time">${$("time").value}</div><div><b>${t.replaceAll("<","&lt;")}</b><div class="muted">${$("category").value} · ${$("duration").value}</div></div>`;
  $("agenda").appendChild(el);$("task").value="";$("addPanel").classList.add("hidden");
 };
@@ -86,7 +115,7 @@ $("addProduct").onclick=()=>{const v=$("product").value.trim();if(!v)return;if(!
 $("product").oninput=render;
 $("suggestions").onclick=e=>{const b=e.target.closest("[data-suggest]");if(!b)return;const v=b.dataset.suggest;if(!shopping.includes(v))shopping.push(v);$("product").value="";saveState();render()};
 $("shopping").onchange=e=>{if(e.target.dataset.i!==undefined){shopping.splice(+e.target.dataset.i,1);saveState();render()}};
-render();
+renderHeader();render();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
 </body>
