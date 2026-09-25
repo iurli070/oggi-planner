@@ -1,375 +1,83 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2563eb">
-<title>Oggi Planner V3</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+ 
+<title>Oggi Planner V4</title>
+ 
+<link rel="manifest" href="manifest.webmanifest">
  
 <style>
-*{box-sizing:border-box}
  
 body{
 margin:0;
-background:#f4f6fa;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-color:#1e293b;
+font-family:-apple-system,sans-serif;
+background:#f5f7fb;
 }
  
-main{
-max-width:550px;
-margin:auto;
-padding:18px;
-}
- 
-.top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:10px;
-}
- 
-.kicker{
-font-size:13px;
-font-weight:700;
-color:#64748b;
-text-transform:uppercase;
-}
- 
-.title{
-font-size:34px;
-font-weight:800;
-}
- 
-button,input,select{
-font:inherit;
-}
- 
-button{
-cursor:pointer;
-border:none;
-}
- 
-.primary{
+header{
 background:#2563eb;
 color:white;
-padding:12px 15px;
-border-radius:14px;
-font-weight:700;
+padding:20px;
 }
  
-.card{
+.section{
 background:white;
-border-radius:18px;
-padding:14px;
-margin-top:10px;
-border:1px solid #e2e8f0;
-}
- 
-.event{
-display:flex;
-gap:12px;
-align-items:flex-start;
-}
- 
-.bar{
-width:5px;
-background:#2563eb;
-border-radius:99px;
-}
- 
-.time{
-width:55px;
-font-weight:700;
-}
- 
-.muted{
-font-size:14px;
-color:#64748b;
-}
- 
-.panel{
-background:white;
-border-radius:18px;
+margin:12px;
 padding:16px;
-margin-top:15px;
-border:1px solid #e2e8f0;
+border-radius:16px;
 }
  
-.hidden{
-display:none;
-}
- 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
- 
-label{
-display:block;
-font-size:13px;
-font-weight:600;
-margin-top:10px;
-}
- 
-input,select{
-width:100%;
-padding:11px;
-border:1px solid #cbd5e1;
-border-radius:12px;
-margin-top:5px;
-}
- 
-.save{
-width:100%;
-margin-top:15px;
-}
- 
-.item{
-display:flex;
-align-items:center;
-gap:10px;
-padding:10px;
-background:#f8fafc;
-border-radius:12px;
-margin-top:8px;
-}
- 
-.delete-btn{
-margin-left:auto;
-background:#ef4444;
-color:white;
-padding:6px 10px;
-border-radius:8px;
-font-size:12px;
-}
- 
-.chip{
-background:#e2e8f0;
-padding:8px 10px;
-border-radius:999px;
-font-size:13px;
-}
- 
-.suggest{
-display:flex;
-flex-wrap:wrap;
-gap:6px;
-margin-top:10px;
-}
- 
-.nav{
-margin-top:20px;
-padding-top:15px;
-border-top:1px solid #e2e8f0;
-display:grid;
-grid-template-columns:repeat(4,1fr);
-text-align:center;
-font-size:12px;
-color:#64748b;
-}
- 
-.active{
-color:#2563eb;
-font-weight:700;
-}
 </style>
+ 
 </head>
  
 <body>
  
-<main>
+<header>
  
-<section class="top">
+<h1>Oggi Planner</h1>
  
-<div>
-<div id="todayLabel" class="kicker"></div>
-<div class="title">Oggi</div>
+<p id="today"></p>
+ 
+</header>
+ 
+<div class="section">
+ 
+<h2>Agenda</h2>
+ 
+<div id="agenda"></div>
+ 
 </div>
  
-<div style="display:flex;gap:8px">
-<button id="openSettings" class="primary">⚙</button>
-<button id="openAdd" class="primary">＋</button>
+<div class="section">
+ 
+<h2>Calendario</h2>
+ 
+<div id="calendar"></div>
+ 
 </div>
  
-</section>
+<div class="section">
  
-<section id="agenda">
-</section>
+<h2>Lista Spesa</h2>
  
-<section id="settingsPanel" class="panel hidden">
+<input id="shoppingInput">
  
-<h2>Impostazioni</h2>
- 
-<div class="grid">
-<label>
-Inizio lavoro
-<input id="workStart" type="time">
-</label>
- 
-<label>
-Fine lavoro
-<input id="workEnd" type="time">
-</label>
-</div>
- 
-<button id="saveSettings" class="primary save">
-Salva
+<button onclick="addProduct()">
+Aggiungi
 </button>
  
-</section>
- 
-<section id="addPanel" class="panel hidden">
- 
-<h2>Nuovo appuntamento</h2>
- 
-<label>
-Titolo
-<input id="task">
-</label>
- 
-<div class="grid">
- 
-<label>
-Categoria
-<select id="category">
-<option>Lavoro</option>
-<option>Appuntamento</option>
-<option>Sport</option>
-<option>Studio</option>
-<option>Scadenza</option>
-</select>
-</label>
- 
-<label>
-Durata
-<select id="duration">
-<option>30 min</option>
-<option>50 min</option>
-<option>60 min</option>
-<option>90 min</option>
-</select>
-</label>
+<div id="shoppingList"></div>
  
 </div>
- 
-<div class="grid">
- 
-<label>
-Data
-<input id="date" type="date">
-</label>
- 
-<label>
-Ora
-<input id="time" type="time">
-</label>
- 
-</div>
- 
-<button id="save" class="primary save">
-Salva appuntamento
-</button>
- 
-</section>
- 
-<section class="panel">
- 
-<h2>🛒 Lista della spesa</h2>
- 
-<div style="display:flex;gap:8px">
- 
-<input id="product" placeholder="Aggiungi prodotto">
- 
-<button id="addProduct" class="primary">
-+
-</button>
- 
-</div>
- 
-<div id="suggestions" class="suggest"></div>
- 
-<div id="shopping"></div>
- 
-</section>
- 
-<nav class="nav">
-<div class="active">⌂<br>Oggi</div>
-<div>▦<br>Calendario</div>
-<div>☰<br>Liste</div>
-<div>◷<br>Scadenze</div>
-</nav>
- 
-</main>
  
 <script>
  
-const $=id=>document.getElementById(id);
+// qui andrà la logica V4
  
-const memoryKey="planner-memory";
-const shoppingKey="planner-shopping";
-const workStartKey="planner-work-start";
-const workEndKey="planner-work-end";
-const eventsKey="planner-events";
+</script>
  
-let memory=JSON.parse(localStorage.getItem(memoryKey) || '["Latte","Pane","Banane"]');
-let shopping=JSON.parse(localStorage.getItem(shoppingKey) || '[]');
-let events=JSON.parse(localStorage.getItem(eventsKey) || '[]');
- 
-let workStart=localStorage.getItem(workStartKey) || "08:30";
-let workEnd=localStorage.getItem(workEndKey) || "17:30";
- 
-function saveAll(){
- 
-localStorage.setItem(memoryKey,JSON.stringify(memory));
-localStorage.setItem(shoppingKey,JSON.stringify(shopping));
-localStorage.setItem(eventsKey,JSON.stringify(events));
-localStorage.setItem(workStartKey,workStart);
-localStorage.setItem(workEndKey,workEnd);
- 
-}
- 
-function todayInput(){
- 
-const d=new Date();
- 
-return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
- 
-}
- 
-function formatToday(){
- 
-return new Intl.DateTimeFormat(
-'it-IT',
-{
-weekday:'long',
-day:'numeric',
-month:'long',
-year:'numeric'
-}
-).format(new Date());
- 
-}
- 
-function renderHeader(){
- 
-$("todayLabel").textContent=formatToday();
- 
-$("workStart").value=workStart;
-$("workEnd").value=workEnd;
- 
-$("date").value=todayInput();
- 
-}
- 
-function renderEvents(){
- 
-const agenda=$("agenda");
- 
-agenda.innerHTML='';
- 
-agenda.innerHTML+=`
-<div class="card event">
-<div class="bar"></div>
-<div class="time">${workStart}</div>
+</body>
+</html>
